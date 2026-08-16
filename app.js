@@ -1,5 +1,22 @@
 (() => {
   'use strict';
+  const anchor = window.location.hash;
+  const contactAnchor = "#contact";
+
+  const generationForm = document.getElementById('generation-form')
+  const contactForm = document.getElementById('contact-form')
+
+  const contactBtn = document.getElementById('contactBtn');
+  const showContactForm = () => {
+    window.location.hash = contactAnchor
+    generationForm.classList.add('hidden');
+    contactForm.classList.remove('hidden');
+    contactBtn.innerHTML = `<span class='material-symbols-outlined'>build</span><span style='vertical-align: super'>&nbsp;Generate App</span>`;
+  }
+
+  if (anchor === contactAnchor) {
+    showContactForm()
+  }
 
   const apiServerUrl = 'android-app-generator-7c4c2b5118c7.herokuapp.com';
   const useHttpsForApiCall = true;
@@ -538,6 +555,20 @@
     azureMapsApiKeyInput.disabled = !azureMapsApiKeyInput.disabled;
   });
 
+  document.getElementById('contactBtn').addEventListener('click', async () => {
+    const generationFormHidden = generationForm.classList.contains("hidden");
+    const contactFormHidden = contactForm.classList.contains("hidden");
+
+    if (generationFormHidden) {
+      location.href = location.href.replace(location.hash,"")
+      contactForm.classList.add("hidden");
+      generationForm.classList.remove("hidden");
+      contactBtn.innerHTML = '<span class="material-symbols-outlined">mail</span><span style="vertical-align: super">&nbsp;Contact me</span>';
+    } else if (contactFormHidden) {
+      showContactForm()
+    }
+  });
+
   document.getElementById('previewBtn').addEventListener('click', async () => {
     const btn = document.getElementById('previewBtn');
     const generateBtn = document.getElementById('generateBtn');
@@ -588,6 +619,35 @@
       btn.disabled = false;
       generateBtn.disabled = false;
     }
+  });
+
+  document.getElementById("contactForm").addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const response = await fetch(
+        `${useHttpsForApiCall ? 'https' : 'http'}://${apiServerUrl}/api/contact`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            name: document.getElementById("name").value,
+            email: document.getElementById("email").value,
+            message: document.getElementById("message").value
+          })
+        }
+    );
+
+    const data = await response.json();
+    const messageSent = data.success
+
+    Swal.fire({
+      title: messageSent ? "Message sent!" : "Sorry, message not sent :(",
+      text: messageSent ? "Thanks, I will contact you back as soon as possible :)" : "Please, try again later",
+      footer: !messageSent ? data.error || "Unknown error" : null,
+      icon:  messageSent ? "success" : "error",
+    })
   });
 
   // Seed with one example entity so the graph and form aren't empty on load.

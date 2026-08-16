@@ -1,14 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Kotlin App Generator — build your Android base</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
-<link rel="stylesheet" href="./styles.css" />
-</head>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kotlin App Generator — build your Android base</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.26.25/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.26.25/sweetalert2.min.css">
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
 <body>
 
 <div class="scaffold">
@@ -30,7 +32,7 @@
 
   <main class="layout">
 
-    <section class="form-column">
+    <section id="generation-form" class="form-column">
 
       <div class="panel">
         <div class="panel-head">
@@ -225,7 +227,39 @@
 
     </section>
 
+    <section id="contact-form" class="hidden form-column">
+
+      <div class="panel">
+        <div class="panel-head">
+          <span class="tag contact-tag">&#x2709;</span>
+          <h2>Contact Form</h2>
+        </div>
+        <form id="contactForm">
+          <div class="field-row">
+            <label>Your name
+              <input type="text" id="name" placeholder="Renan Santos" required />
+            </label>
+            <label>Your e-mail
+              <input type="email" id="email" placeholder="my_email@email.com" class="mono" required />
+            </label>
+          </div>
+          <div>
+            <label>Message
+              <textarea id="message" placeholder="I would like to negotiate with you an specific Android app project." required></textarea>
+            </label>
+          </div>
+          <br/>
+          <button class="btn-primary btn-with-no-margin" type="submit"><span class="material-symbols-outlined">send</span><span style="vertical-align: super">&nbsp;Send</span></button>
+        </form>
+      </div>
+
+    </section>
+
     <aside class="side-column">
+      <div class="panel">
+        <button class="btn-primary btn-with-no-margin" id="contactBtn" type="button"><span class="material-symbols-outlined">mail</span><span style="vertical-align: super">&nbsp;Contact me</span></button>
+      </div>
+
       <div class="panel graph-panel">
         <div class="panel-head">
           <span class="tag">graph</span>

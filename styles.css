@@ -140,6 +140,10 @@ html, body {
   flex: 1;
 }
 
+.contact-tag {
+  font-size: medium !important;
+}
+
 .tag {
   font-family: var(--mono);
   font-size: 11px;
@@ -164,6 +168,10 @@ html, body {
 }
 
 /* ---------- Form fields ---------- */
+.hidden {
+  display: none !important;
+}
+
 .field-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -198,7 +206,11 @@ label {
   cursor: pointer;
 }
 
-input[type="text"], input[type="number"], input[type="password"], select {
+textarea {
+  min-height: 500px;
+}
+
+input[type="text"], input[type="number"], input[type="password"], input[type="email"], textarea, select {
   background: var(--bg-inset);
   border: 1px solid var(--border);
   color: var(--text);
@@ -241,6 +253,11 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
   font-family: var(--sans);
   transition: background 0.15s ease;
 }
+
+.btn-with-no-margin {
+  margin-bottom: 0 !important;
+}
+
 .btn-primary:hover { background: #3ff0c2; }
 .btn-primary:disabled { opacity: 0.5; cursor: progress; }
 

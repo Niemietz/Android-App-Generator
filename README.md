@@ -119,4 +119,4 @@ the relevant `src/generators/*.js` file — no framework or plugin system to lea
 ## Contact
 
 If you want to contact me for any Android app development project services, just fill up the form at:
-**[URL_PLACEHOLDER]**
+https://niemietz.github.io/Android-App-Generator#contact
