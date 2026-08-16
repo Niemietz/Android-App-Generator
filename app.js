@@ -560,7 +560,7 @@
     const contactFormHidden = contactForm.classList.contains("hidden");
 
     if (generationFormHidden) {
-      location.href = location.href.replace(location.hash,"")
+      window.location.hash = ""
       contactForm.classList.add("hidden");
       generationForm.classList.remove("hidden");
       contactBtn.innerHTML = '<span class="material-symbols-outlined">mail</span><span style="vertical-align: super">&nbsp;Contact me</span>';
