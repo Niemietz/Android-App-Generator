@@ -197,6 +197,7 @@
       includeGoogleMaps: document.getElementById('includeGoogleMaps').checked,
       includeAzureMaps: document.getElementById('includeAzureMaps').checked,
       includeSqlConnectVariant: document.getElementById('includeSqlConnectVariant').checked,
+      includeFirestore: document.getElementById('includeFirestore').checked,
       baseUrl: document.getElementById('baseUrl').value.trim() || 'https://api.example.com/',
       sync: {
         maxRetries: Number(document.getElementById('maxRetries').value) || 0,
@@ -293,6 +294,7 @@
     let baseModules = spec.project.includeLogin ? 6 : 5; // app + core-common/ui/database/network(+auth)
     if (specUsesImages(spec)) baseModules += 1; // core-image
     if (spec.project.includeFirebase) baseModules += 1; // core-firebase
+    if (spec.project.includeFirestore) baseModules += 1; // core-firestore
     document.getElementById('statModules').textContent = baseModules + spec.entities.length + spec.externalSdks.length * 2;
   }
 
@@ -306,6 +308,7 @@
     if (spec.project.includeLogin) coreModules.push('core-auth');
     if (specUsesImages(spec)) coreModules.push('core-image');
     if (spec.project.includeFirebase) coreModules.push('core-firebase');
+    if (spec.project.includeFirestore) coreModules.push('core-firestore');
     const features = spec.entities.map((e) => `feature-${(e.name || 'entity').toLowerCase()}`);
     const sdkModules = spec.externalSdks.flatMap((sdk) => {
       const m = previewModuleName(sdk.name);
@@ -423,6 +426,7 @@
   const imageBackendSelect = document.getElementById('imageBackend');
   const firebaseStorageOption = imageBackendSelect.querySelector('option[value="firebase-storage"]');
   const sqlConnectCheckbox = document.getElementById('includeSqlConnectVariant');
+  const firestoreCheckbox = document.getElementById('includeFirestore');
 
   function syncFirebaseDependents() {
     const firebaseOn = includeFirebaseCheckbox.checked;
@@ -434,6 +438,9 @@
 
     sqlConnectCheckbox.disabled = !firebaseOn;
     if (!firebaseOn) sqlConnectCheckbox.checked = false;
+
+    firestoreCheckbox.disabled = !firebaseOn;
+    if (!firebaseOn) firestoreCheckbox.checked = false;
   }
 
   includeFirebaseCheckbox.addEventListener('change', () => {
@@ -442,6 +449,7 @@
   });
   imageBackendSelect.addEventListener('change', refreshAll);
   sqlConnectCheckbox.addEventListener('change', refreshAll);
+  firestoreCheckbox.addEventListener('change', refreshAll);
   syncFirebaseDependents();
 
   const periodicToggle = document.getElementById('periodicSyncEnabled');

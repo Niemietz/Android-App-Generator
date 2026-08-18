@@ -33,6 +33,13 @@ For each project you describe, you get a Gradle project with:
   alternative sign-in (email/password), on top of the existing backend-token login. Requires a
   real `google-services.json` from your own Firebase console — the generator can't create one for
   you (it holds project-specific credentials) and clearly documents where to get it.
+- **`core-firestore`** *(optional, off by default; needs Firebase)* — a generic,
+  collection-agnostic Firestore data layer (`FirestoreDataSource`: add/set/get/delete plus
+  cursor-based pagination) for arbitrary large collections your entities don't model — activity
+  feeds, logs, event streams. Deliberately **not** wired into `SyncCoordinator`/
+  `EntitySynchronizer` at all, and **not** flavor-gated — present in every build variant
+  regardless of the restBackend/sqlConnect choice below, since it's an entirely independent
+  concern. Genuinely opt-in: nothing generated calls into it; you inject it where you need it.
 - **Two build variants for remote data** *(optional, off by default; needs Firebase)* — a
   Product Flavor split (`restBackend` / `sqlConnect`), selectable in Android Studio's Build
   Variants panel *before* building: your existing OkHttp/Retrofit backend, or
