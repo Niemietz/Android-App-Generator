@@ -173,6 +173,7 @@ html, body {
 }
 
 .field-row {
+  align-items: center;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
@@ -428,8 +429,19 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 /* ---------- Module graph ---------- */
-.graph-panel { padding-bottom: 10px; }
-.module-graph { width: 100%; height: auto; display: block; }
+.panel-head-graph { position: absolute; }
+.graph-panel {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch; /* smooth momentum scroll on iOS */
+  padding-bottom: 10px;
+}
+.module-graph {
+  margin-top: 30px;
+  display: block;   /* avoid inline-svg baseline gap */
+  height: 216px;    /* or whatever fits your layout */
+  max-width: none;  /* override any width:100%/max-width:100% that would scale it down */
+}
 .node-box { fill: var(--bg-inset); stroke: var(--border); stroke-width: 1; }
 .node-box.core { stroke: var(--accent-warm); }
 .node-box.feature { stroke: var(--accent); }

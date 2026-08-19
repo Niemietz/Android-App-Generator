@@ -104,12 +104,15 @@
           <label class="checkbox-label">
             <span class="checkbox-inline"><input type="checkbox" id="includeSqlConnectVariant" disabled /> Also generate an SQL Connect build variant (needs Firebase; extra setup required — see README)</span>
           </label>
-          <span></span>
+          <label class="checkbox-label">
+            <span>&nbsp;</span>
+            <span class="checkbox-inline"><input type="checkbox" id="includeFirestore" disabled /> Add Firestore for arbitrary large collections (needs Firebase; separate from entity sync)</span>
+          </label>
         </div>
         <div class="field-row">
           <label class="checkbox-label">
             <span>&nbsp;</span>
-            <span class="checkbox-inline"><input type="checkbox" id="includeFirestore" disabled /> Add Firestore for arbitrary large collections (needs Firebase; separate from entity sync)</span>
+            <span class="checkbox-inline"><input type="checkbox" id="includeLottie" checked /> Add Lottie for smooth and low RAM consumption animations</span>
           </label>
           <span></span>
         </div>
@@ -268,7 +271,7 @@
       </div>
 
       <div class="panel graph-panel">
-        <div class="panel-head">
+        <div class="panel-head panel-head-graph">
           <span class="tag">graph</span>
           <h2>Module map</h2>
         </div>

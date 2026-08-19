@@ -198,6 +198,7 @@
       includeAzureMaps: document.getElementById('includeAzureMaps').checked,
       includeSqlConnectVariant: document.getElementById('includeSqlConnectVariant').checked,
       includeFirestore: document.getElementById('includeFirestore').checked,
+      includeLottie: document.getElementById('includeLottie').checked,
       baseUrl: document.getElementById('baseUrl').value.trim() || 'https://api.example.com/',
       sync: {
         maxRetries: Number(document.getElementById('maxRetries').value) || 0,
@@ -298,6 +299,24 @@
     document.getElementById('statModules').textContent = baseModules + spec.entities.length + spec.externalSdks.length * 2;
   }
 
+  function centerGraphScroll(positions) {
+    const panel = document.querySelector('.graph-panel');
+    const svg = document.getElementById('moduleGraph');
+    if (!panel || !svg || !positions.app) return;
+
+    const svgWidth = svg.width.baseVal.value;
+    const viewBoxWidth = svg.viewBox.baseVal.width;
+    const viewBoxMinX = svg.viewBox.baseVal.x;
+
+    // px-per-viewBox-unit scale factor (in case width attr != viewBox width)
+    const scale = svgWidth / viewBoxWidth;
+
+    const appCenterX = positions.app.x + positions.app.w / 2;
+    const appCenterPx = (appCenterX - viewBoxMinX) * scale;
+
+    panel.scrollLeft = Math.max(0, appCenterPx / 2);
+  }
+
   function drawModuleGraph(spec) {
     const svg = document.getElementById('moduleGraph');
     svg.innerHTML = '';
@@ -309,6 +328,10 @@
     if (specUsesImages(spec)) coreModules.push('core-image');
     if (spec.project.includeFirebase) coreModules.push('core-firebase');
     if (spec.project.includeFirestore) coreModules.push('core-firestore');
+    if (spec.project.includeLottie) coreModules.push('core-lottie');
+    if (spec.project.includeGoogleMaps) coreModules.push('google-maps');
+    if (spec.project.includeAzureMaps) coreModules.push('azure-maps');
+    if (spec.project.includeGoogleMaps || spec.project.includeAzureMaps) coreModules.push('core-maps');
     const features = spec.entities.map((e) => `feature-${(e.name || 'entity').toLowerCase()}`);
     const sdkModules = spec.externalSdks.flatMap((sdk) => {
       const m = previewModuleName(sdk.name);
@@ -327,19 +350,58 @@
     const height = rows[rows.length - 1].y + 60;
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
+    // --- text measuring helper -------------------------------------------
+    // Uses a hidden <text> node appended to the real SVG so getComputedTextLength()
+    // reflects the actual font/class styling (CSS-accurate, unlike guessing metrics).
+    const measurer = document.createElementNS(ns, 'text');
+    measurer.setAttribute('class', 'node-label');
+    measurer.style.visibility = 'hidden';
+    svg.appendChild(measurer);
+
+    function measureTextWidth(str) {
+      measurer.textContent = str;
+      return measurer.getComputedTextLength();
+    }
+
+    const PAD_X = 16;   // horizontal padding inside the box (8px each side)
+    const MIN_W = 50;
+    const MAX_W = 140;
+
+    function displayLabelFor(label, cls) {
+      const base = cls === 'core' ? label.replace('core-', '') : label;
+      return base.length > 14 ? base.slice(0, 13) + '…' : base;
+    }
+
+    // --- layout: size each box to its own text, then lay out the row -----
     const positions = {};
     rows.forEach((row) => {
-      const count = row.boxes.length;
       const gap = 10;
-      const maxBoxW = 118;
-      const boxW = Math.min(maxBoxW, (width - 20 - (count - 1) * gap) / count);
-      const totalW = count * boxW + (count - 1) * gap;
+
+      // First pass: compute each box's display label + natural width.
+      const sized = row.boxes.map((box) => {
+        const displayLabel = displayLabelFor(box.label, box.cls);
+        const textW = measureTextWidth(displayLabel);
+        const boxW = Math.min(MAX_W, Math.max(MIN_W, textW + PAD_X));
+        return { ...box, displayLabel, w: boxW };
+      });
+
+      const totalW = sized.reduce((sum, b) => sum + b.w, 0) + (sized.length - 1) * gap;
       let x = (width - totalW) / 2;
-      row.boxes.forEach((box) => {
-        positions[box.label] = { x, y: row.y, w: boxW, h: 30, cls: box.cls };
-        x += boxW + gap;
+
+      sized.forEach((box) => {
+        positions[box.label] = {
+          x,
+          y: row.y,
+          w: box.w,
+          h: 30,
+          cls: box.cls,
+          displayLabel: box.displayLabel,
+        };
+        x += box.w + gap;
       });
     });
+
+    measurer.remove();
 
     // Edges: app -> each feature, each feature -> each core module
     const edges = [];
@@ -373,13 +435,25 @@
 
       const text = document.createElementNS(ns, 'text');
       text.setAttribute('x', pos.x + pos.w / 2);
-      text.setAttribute('y', pos.y + pos.h / 2 + 4);
+      text.setAttribute('y', pos.y + pos.h / 2);
       text.setAttribute('text-anchor', 'middle');
+      text.setAttribute('dominant-baseline', 'central');
       text.setAttribute('class', 'node-label');
-      const displayLabel = cls === 'core' ? label.replace('core-', '') : label;
-      text.textContent = displayLabel.length > 14 ? displayLabel.slice(0, 13) + '…' : displayLabel;
+      text.textContent = pos.displayLabel;
       svg.appendChild(text);
     });
+
+    // after computing `positions`...
+    const allX = Object.values(positions).flatMap((p) => [p.x, p.x + p.w]);
+    const minX = Math.min(0, ...allX);
+    const maxX = Math.max(width, ...allX);
+    const contentWidth = maxX - minX;
+
+    svg.setAttribute('viewBox', `${minX} 0 ${contentWidth} ${height}`);
+    svg.setAttribute('width', contentWidth);   // real px width so the panel can scroll to it
+    svg.setAttribute('height', height);
+
+    centerGraphScroll(positions);
   }
 
   function refreshAll() {
@@ -422,6 +496,9 @@
   });
 
   document.getElementById('includeLogin').addEventListener('change', refreshAll);
+  document.getElementById('includeLottie').addEventListener('change', refreshAll);
+  document.getElementById('includeGoogleMaps').addEventListener('change', refreshAll);
+  document.getElementById('includeAzureMaps').addEventListener('change', refreshAll);
   const includeFirebaseCheckbox = document.getElementById('includeFirebase');
   const imageBackendSelect = document.getElementById('imageBackend');
   const firebaseStorageOption = imageBackendSelect.querySelector('option[value="firebase-storage"]');
