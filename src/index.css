@@ -292,6 +292,8 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
   margin: 0 0 0;
   min-height: 16px;
 }
+.validation.error { border: 1px solid var(--danger) !important; }
+.emsg { color: var(--danger) }
 .status.error { color: var(--danger); }
 .status.success { color: var(--accent); }
 
@@ -305,6 +307,7 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
 }
 
 .entity-card-head {
+  align-items: self-start;
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
