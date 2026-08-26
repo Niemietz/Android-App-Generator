@@ -452,3 +452,4 @@ input:disabled { opacity: 0.45; cursor: not-allowed; }
 .node-box.app { stroke: var(--accent); fill: var(--accent-dim); }
 .node-label { font-family: var(--mono); font-size: 10.5px; fill: var(--text); }
 .edge-line { stroke: var(--border); stroke-width: 1; }
+.g-recaptcha { width: fit-content; }

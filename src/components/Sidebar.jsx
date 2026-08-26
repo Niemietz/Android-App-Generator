@@ -1,8 +1,9 @@
-import {useRef, useState} from 'react';
+import { useState } from 'react';
 import ModuleGraph from './ModuleGraph.jsx';
-import { buildSpecPayload, specSchema } from '../utils/spec';
+import { buildSpecPayload, specSchema} from '../utils/spec';
 import { validateFormData } from "../utils/formValidation";
 import { API_BASE_URL } from '../config';
+import { parseEntities, parseExternalSdks } from "../utils/panelParser";
 
 export default function Sidebar(
     {
@@ -25,22 +26,8 @@ export default function Sidebar(
         project: Object.fromEntries(
           new FormData(projectForm.current).entries()
         ),
-        entities: Array.from(
-          Array.from(
-            new FormData(entitiesForm.current).entries()
-              .filter((entry) => entry[0].includes("entity"))
-          ).map((entry) => {
-            const entityIndex = entry[0].toString().split("_").at(-1);
-            const fields = Array.from(
-              new FormData(entitiesForm.current).entries()
-                .filter((item) =>
-                  item[0].includes("field") && item[0].toString().split("_").at(-1) === entityIndex.toString()
-                )
-            ).map((entry) => Object({ name: entry.at(-1), path: entry[0].toString() }))
-
-            return { name: entry.at(-1), fields: fields, path: entry[0].toString() };
-          })
-        )
+        entities: parseEntities(new FormData(entitiesForm.current).entries()),
+        externalSdks: parseExternalSdks(new FormData(externalSdksForm.current).entries())
       }
     }
 
@@ -50,7 +37,8 @@ export default function Sidebar(
         specSchema,
         [
           projectForm.current,
-          entitiesForm.current
+          entitiesForm.current,
+          externalSdksForm.current,
         ],
         getFormData(),
         (message) => {
@@ -62,9 +50,7 @@ export default function Sidebar(
           });*/
         }, (path) =>
         path.length === 1 &&
-          (path[0] === "entities" ||
-            path[0] === "extraScreens" ||
-            path[0] === "externalSdks")
+          path[0] === "entities" // because of the minimum amount of entities >= 1
       )
     ) {
       return;
@@ -116,7 +102,8 @@ export default function Sidebar(
         specSchema,
         [
           projectForm.current,
-          entitiesForm.current
+          entitiesForm.current,
+          externalSdksForm.current,
         ],
         getFormData(),
         (message) => {
@@ -129,9 +116,7 @@ export default function Sidebar(
         },
         (path) =>
           path.length === 1 &&
-          (path[0] === "entities" ||
-            path[0] === "extraScreens" ||
-            path[0] === "externalSdks")
+            path[0] === "entities" // because of the minimum amount of entities >= 1
       )
     ) {
       return;

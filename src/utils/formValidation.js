@@ -9,7 +9,7 @@ import Output from 'zod'
  * @param errorCallback When the error does not come from a specific field, the callback is called
  * @param forceCallbackIf Function to check if callback should be forced invoked according to Zod error path
  */
-function showError(formElements, formValidationResult, errorCallback, forceCallbackIf) {
+function showError(formElements, formValidationResult, errorCallback = null, forceCallbackIf = null) {
   let callbackMessage = null
   let invokeCallback = true
 
@@ -17,10 +17,8 @@ function showError(formElements, formValidationResult, errorCallback, forceCallb
     const error = formValidationResult.error[i];
     const elem = formElements.find((elem) => {
       const path = Array.from(error.path)
-      return (forceCallbackIf) ?
-        forceCallbackIf(path) ?
-          null :
-          elem.name === path.at(-1) :
+      return (forceCallbackIf && forceCallbackIf(path)) ?
+        null :
         elem.name === path.at(-1)
     })
 
@@ -68,7 +66,7 @@ function validateFormWithZod(zodSchema, data) {
  * @param forceCallbackIf Function to check if callback should be forced invoked according to Zod error path
  * @returns {boolean}
  */
-export function validateForm(zodSchema, forms, errorCallback, forceCallbackIf) {
+export function validateForm(zodSchema, forms, errorCallback = null, forceCallbackIf = null) {
   if (!(forms instanceof Array)) {
     return true;
   }
@@ -107,7 +105,7 @@ export function validateForm(zodSchema, forms, errorCallback, forceCallbackIf) {
  * @param forceCallbackIf Function to check if callback should be forced invoked according to Zod error path
  * @returns {boolean}
  */
-export function validateFormData(zodSchema, forms, data, errorCallback, forceCallbackIf) {
+export function validateFormData(zodSchema, forms, data, errorCallback = null, forceCallbackIf = null) {
   if (!(forms instanceof Array)) {
     return true;
   }

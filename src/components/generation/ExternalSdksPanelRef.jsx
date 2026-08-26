@@ -19,8 +19,8 @@ export const ExternalSdksPanelRef =
                     <code>RemoteImage</code> for any parameter/return type that's a cached remote image.
                 </p>
                 <div id="sdkList">
-                    {props.state.externalSdks.map((sdk) => (
-                        <SdkCard key={sdk.id} sdk={sdk} actions={props.actions} />
+                    {props.state.externalSdks.map((sdk, index) => (
+                        <SdkCard sdkIndex={index} key={sdk.id} sdk={sdk} actions={props.actions} />
                     ))}
                 </div>
             </div>

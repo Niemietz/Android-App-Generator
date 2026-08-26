@@ -1,16 +1,20 @@
 import MethodCard from './MethodCard.jsx';
 
-export default function InterfaceCard({ sdkId, iface, actions }) {
-  return (
+export default function InterfaceCard({ sdkIndex, interfaceIndex, sdkId, iface, actions }) {
+    const interfaceName = `interfaceName_${interfaceIndex}_${sdkIndex}`;
+
+    return (
     <div className="interface-card">
       <div className="entity-card-head">
-        <input
-          type="text"
-          className="interface-name mono"
-          placeholder="Interface name, e.g. PaymentProcessor"
-          value={iface.name}
-          onChange={(e) => actions.updateInterface(sdkId, iface.id, { name: e.target.value })}
-        />
+        <label className="interface-name mono">
+          <input
+            name={interfaceName}
+            type="text"
+            placeholder="Interface name, e.g. PaymentProcessor"
+            value={iface.name}
+            onChange={(e) => actions.updateInterface(sdkId, iface.id, { name: e.target.value })}
+          />
+        </label>
         <button
           className="btn-icon remove-interface"
           type="button"
@@ -21,8 +25,8 @@ export default function InterfaceCard({ sdkId, iface, actions }) {
         </button>
       </div>
       <div className="methods-container">
-        {iface.methods.map((method) => (
-          <MethodCard key={method.id} sdkId={sdkId} interfaceId={iface.id} method={method} actions={actions} />
+        {iface.methods.map((method, index) => (
+          <MethodCard sdkIndex={sdkIndex} interfaceIndex={interfaceIndex} methodIndex={index} key={method.id} sdkId={sdkId} interfaceId={iface.id} method={method} actions={actions} />
         ))}
       </div>
       <button className="btn-ghost small add-method" type="button" onClick={() => actions.addMethod(sdkId, iface.id)}>

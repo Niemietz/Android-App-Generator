@@ -1,27 +1,33 @@
 import ParamRow from './ParamRow.jsx';
 
-export default function MethodCard({ sdkId, interfaceId, method, actions }) {
-  return (
+export default function MethodCard({ sdkIndex, interfaceIndex, methodIndex, sdkId, interfaceId, method, actions }) {
+    const methodName = `methodName_${methodIndex}_${interfaceIndex}_${sdkIndex}`;
+    const returnTypeName = `returnType_${methodIndex}_${interfaceIndex}_${sdkIndex}`;
+
+    return (
     <div className="method-card">
       <div className="method-head">
-        <input
-          type="text"
-          className="method-name mono"
-          placeholder="methodName"
-          value={method.name}
-          onChange={(e) => actions.updateMethod(sdkId, interfaceId, method.id, { name: e.target.value })}
-        />
-        <input
-          type="text"
-          className="method-return-type mono"
-          placeholder="Return type (Unit, String, RemoteImage...)"
-          value={method.returnType}
-          onChange={(e) => actions.updateMethod(sdkId, interfaceId, method.id, { returnType: e.target.value })}
-        />
-        <label className="suspend-label">
+        <label className="method-name mono">
+          <input
+            name={methodName}
+            type="text"
+            placeholder="methodName"
+            value={method.name}
+            onChange={(e) => actions.updateMethod(sdkId, interfaceId, method.id, { name: e.target.value })}
+          />
+        </label>
+        <label className="method-return-type mono">
+          <input
+            name={returnTypeName}
+            type="text"
+            placeholder="Return type (Unit, String, RemoteImage...)"
+            value={method.returnType}
+            onChange={(e) => actions.updateMethod(sdkId, interfaceId, method.id, { returnType: e.target.value })}
+          />
+        </label>
+        <label className="method-suspend">
           <input
             type="checkbox"
-            className="method-suspend"
             checked={method.suspend}
             onChange={(e) => actions.updateMethod(sdkId, interfaceId, method.id, { suspend: e.target.checked })}
           />{' '}
@@ -37,8 +43,12 @@ export default function MethodCard({ sdkId, interfaceId, method, actions }) {
         </button>
       </div>
       <div className="params-container">
-        {method.parameters.map((param) => (
+        {method.parameters.map((param, index) => (
           <ParamRow
+            sdkIndex={sdkIndex}
+            interfaceIndex={interfaceIndex}
+            methodIndex={methodIndex}
+            paramIndex={index}
             key={param.id}
             param={param}
             onChange={(patch) => actions.updateParam(sdkId, interfaceId, method.id, param.id, patch)}

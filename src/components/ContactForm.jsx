@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import {useRef, useState, useEffect} from 'react';
 import { API_BASE_URL } from '../config';
 import { contactSchema } from "../utils/contact";
 import { validateForm } from "../utils/formValidation";
@@ -7,17 +7,44 @@ export default function ContactForm({ hidden }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
+  const [captchaClasses, setCaptchaClasses] = useState('g-recaptcha');
+  const [showCaptchaErrorMessage, setShowCaptchaErrorMessage] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!validateForm(contactSchema, [event.target], null)) {
+    if (!validateForm(contactSchema, [event.target])) {
       return;
     }
 
     /*grecaptcha.enterprise.ready(async () => {
       const token = await grecaptcha.enterprise.execute('6LflDpItAAAAALEG41hhROVCs2kJX0pdrcSZjzzN', {action: 'submit'});*/
-    const token = window.grecaptcha?.enterprise?.getResponse();
+
+    let token = null
+    try {
+      token = window.grecaptcha.enterprise.getResponse();
+
+      if (!token) {
+        setCaptchaClasses( "g-recaptcha validation error");
+        setShowCaptchaErrorMessage(true)
+        setResetKey(n => n + 1);
+        return;
+      }
+
+      setCaptchaClasses( "g-recaptcha")
+      setShowCaptchaErrorMessage(false)
+      setResetKey(n => n + 1);
+    } catch (e) {
+      console.warn(e);
+      window.Swal?.fire({
+        title: 'Sorry, message not sent :(',
+        text: 'Please, try again later',
+        footer: 'Invalid captcha',
+        icon: 'error',
+      });
+      return;
+    }
 
     const response = await fetch(`${API_BASE_URL}/api/contact`, {
       method: 'POST',
@@ -89,11 +116,14 @@ export default function ContactForm({ hidden }) {
           </div>
           <br />
           <div
-            className="g-recaptcha"
+            className={captchaClasses}
             data-theme="dark"
             data-sitekey="6Le8PpItAAAAAHvtoirFBHaKbTY-PWvbPlkGKX2E"
             data-action="submit"
           />
+          <div key={resetKey}>
+            {showCaptchaErrorMessage && <span className="emsg" style={{marginBottom: "10rem"}}>Please, complete the "I am not a robot" challenge</span>}
+          </div>
           <br />
           <button className="btn-primary btn-with-no-margin" type="submit">
             <span className="material-symbols-outlined">send</span>

@@ -9,7 +9,7 @@ const _superRefine = (data, ctx, validation, refinedIssue) => {
           code: (refinedIssue.code) ? refinedIssue.code : z.ZodIssueCode.custom,
           minimum: 1,
           inclusive: true,
-          path: [data.path],
+          path: (refinedIssue.path) ? refinedIssue.path : [ data.path ],
         },
         refinedIssue
       )
@@ -25,7 +25,7 @@ export const specSchema = z.object({
     targetSdk: z.coerce.number().int().positive(),
     compileSdk: z.coerce.number().int().positive(),
     baseUrl: z.string().regex(/^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%.\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%\+.~#?&\/=])$/, 'Invalid base URL'),
-    /*googleMapsApiKey: z.string().regex(/^AIza[0-9A-Za-z_-]{35}$/, 'Invalid Google API Key'),
+    /*googleMapsApiKey: z.string().regex(/^AIza[0-9A-Za-z_-]{35}$/, 'Invalid Google API Key').optional(),
     azureMapsApiKey: z.string().regex(/^[0-9a-fA-F]{32}$/, 'Invalid Azure Key').optional(),*/
   })
   .refine((p) => p.minSdk <= p.targetSdk, {
@@ -36,31 +36,41 @@ export const specSchema = z.object({
   }),
   entities: z.array(
     z.object({
-      name: z.any().optional(),//.min(1),
+      name: z.any().optional(),
       path: z.any().optional(),
       fields: z.array(
         z.object({
           path: z.any().optional(),
-          name: z.any().optional()//.min(1)
+          name: z.any().optional()
         }).superRefine((data, ctx) => {
           /* Super Refining "name" */
+          const validationName1 = data.name.length > 0
+          const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
           _superRefine(data, ctx, () => {
-            return data.name.length > 0
+            return (validationName1 && validationName2)
           }, {
             origin: "string",
-            code: z.ZodIssueCode.too_small,
-            message: "Too small: expected string to have >=1 characters",
+            code:  !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+            message:
+              !validationName1 ?
+                "Too small: expected string to have >=1 characters" :
+                "Invalid field name",
           });
         })
       ),
     }).superRefine((data, ctx) => {
       /* Super Refining "name" */
+      const validationName1 = data.name.length > 0
+      const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
       _superRefine(data, ctx, () => {
-        return data.name.length > 0
+        return (validationName1 && validationName2)
       }, {
         origin: "string",
-        code: z.ZodIssueCode.too_small,
-        message: "Too small: expected string to have >=1 characters",
+        code:  !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+        message:
+          !validationName1 ?
+            "Too small: expected string to have >=1 characters" :
+            "Invalid entity name",
       });
     })
   ).superRefine((data, ctx) => {
@@ -71,9 +81,123 @@ export const specSchema = z.object({
       origin: "array",
       code: z.ZodIssueCode.too_small,
       message: "Add at least one entity",
-      path: null,
+      path: null, // must be null to show the error in a different way (not below the field)
     });
-  })/*.min(1, 'Add at least one entity')*/
+  }),
+  externalSdks: z.array(
+    z.object({
+      name: z.any().optional(),
+      path: z.any().optional(),
+      interfaces: z.array(
+        z.object({
+          name: z.any().optional(),
+          path: z.any().optional(),
+          methods: z.array(
+              z.object({
+                name: z.any().optional(),
+                returnType: z.any().optional(),
+                path: z.any().optional(),
+                params: z.array(
+                    z.object({
+                      name: z.any().optional(),
+                      type: z.any().optional(),
+                      path: z.any().optional(),
+                    }).superRefine((data, ctx) => {
+                      /* Super Refining "name" */
+                      const validationName1 = data.name.length > 0
+                      const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
+                      _superRefine(data, ctx, () => {
+                        return (validationName1 && validationName2)
+                      }, {
+                        origin: "string",
+                        code:  !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+                        message:
+                          !validationName1 ?
+                            "Too small: expected string to have >=1 characters" :
+                            "Invalid parameter name",
+                        path: [ data.path["name"] ],
+                      });
+
+                      /* Super Refining "type" */
+                      const validationType1 = data.type.length > 0
+                      const validationType2 = data.type.match(/^[0-9A-Za-z_-]{1,15}$/)
+                      _superRefine(data, ctx, () => {
+                        return (validationType1 && validationType2)
+                      }, {
+                        origin: "string",
+                        code:  !validationType1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+                        message:
+                          !validationType1 ?
+                            "Too small: expected string to have >=1 characters" :
+                            "Invalid parameter type",
+                        path: [ data.path["type"] ],
+                      });
+                    })
+                ),
+              }).superRefine((data, ctx) => {
+                /* Super Refining "name" */
+                const validationName1 = data.name.length > 0
+                const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
+                _superRefine(data, ctx, () => {
+                  return (validationName1 && validationName2)
+                }, {
+                  origin: "string",
+                  code: !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+                  message:
+                    !validationName1 ?
+                      "Too small: expected string to have >=1 characters" :
+                      "Invalid method name",
+                  path: [ data.path["name"] ],
+                });
+
+                /* Super Refining "returnType" */
+                const validationReturnType1 = data.returnType.length > 0
+                const validationReturnType2 = data.returnType.match(/^[0-9A-Za-z_-]{1,15}$/)
+                _superRefine(data, ctx, () => {
+                  return (validationReturnType1 && validationReturnType2)
+                }, {
+                  origin: "string",
+                  code: !validationReturnType1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+                  message:
+                    !validationReturnType1 ?
+                      "Too small: expected string to have >=1 characters" :
+                      "Invalid method return type",
+                  path: [ data.path["returnType"] ],
+                });
+              })
+          ),
+        }).superRefine((data, ctx) => {
+          /* Super Refining "name" */
+          const validationName1 = data.name.length > 0
+          const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
+          _superRefine(data, ctx, () => {
+            return (validationName1 && validationName2)
+          }, {
+            origin: "string",
+            code:  !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+            message:
+              !validationName1 ?
+                "Too small: expected string to have >=1 characters" :
+                "Invalid interface name",
+          });
+        })
+      ),
+    }).superRefine((data, ctx) => {
+      /* Super Refining "name" */
+      const validationName1 = data.name.length > 0
+      const validationName2 = data.name.match(/^[0-9A-Za-z_-]{1,15}$/)
+      _superRefine(data, ctx, () => {
+        return (validationName1 && validationName2)
+      }, {
+        origin: "string",
+        code: !validationName1 ? z.ZodIssueCode.too_small : z.ZodIssueCode.invalid_format,
+        message:
+          !validationName1 ?
+            "Too small: expected string to have >=1 characters" :
+            "Invalid SDK name",
+      });
+    })
+  )
 });
 
 /** Lightweight client-side preview only — normalizeSpec.js on the server is the source of truth. */
