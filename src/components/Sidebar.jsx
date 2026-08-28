@@ -179,7 +179,7 @@ export default function Sidebar(
 					{view === 'contact' ? (
 						<>
 							<span className="material-symbols-outlined">build</span>
-							<span style={{verticalAlign: 'super'}}>&nbsp;Setup App</span>
+							<span style={{verticalAlign: 'super'}}>&nbsp;Setup app</span>
 						</>
 					) : (
 						<>
