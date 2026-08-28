@@ -27,6 +27,9 @@
  *     [prefix]: {
  *       level: number,  // 0 = root level, 1 = children of root, ...
  *       prop: string,   // property on the node to assign the value to
+ *       shouldTrim:   // optional. Controls whether/how this field's raw should be trimmed
+ *         true |        //   - true: value of the node property is assigned trimmed
+ *         false |      //   - omitted/false: value of the node property is assigned without trimming
  *       capturesPath:   // optional. Controls whether/how this field's raw
  *         true |        //   key gets captured into node[pathProp]:
  *         string |      //   - true: node[pathProp] is set directly to the key
@@ -48,95 +51,99 @@
  * Unknown key prefixes are ignored, so a form can carry extra fields your
  * schema doesn't care about.
  */
-function createFormTreeParser({ fields, children, pathProp = "path" }) {
-    const maxLevel = children.length;
+function createFormTreeParser({fields, children, pathProp = "path"}) {
+	const maxLevel = children.length;
 
-    const makeNode = (level) => {
-        const node = {};
-        if (level < maxLevel) node[children[level]] = new Map();
-        return node;
-    };
+	const makeNode = (level) => {
+		const node = {};
+		if (level < maxLevel) node[children[level]] = new Map();
+		return node;
+	};
 
-    const toArray = (map, level) =>
-        Array.from(map.entries())
-            .sort(([a], [b]) => a - b)
-            .map(([, node]) => {
-                if (level >= maxLevel) return node;
-                const childProp = children[level];
-                return { ...node, [childProp]: toArray(node[childProp], level + 1) };
-            });
+	const toArray = (map, level) =>
+		Array.from(map.entries())
+			.sort(([a], [b]) => a - b)
+			.map(([, node]) => {
+				if (level >= maxLevel) return node;
+				const childProp = children[level];
+				return {...node, [childProp]: toArray(node[childProp], level + 1)};
+			});
 
-    // Accepts several shapes so callers don't have to remember exactly how
-    // to unwrap their data source:
-    //   - a plain array of [key, value] pairs
-    //   - a FormData instance (or anything else with an `.entries()` method,
-    //     like a Map) — `.entries()` is called for you
-    //   - an iterable of [key, value] pairs (e.g. `formData.entries()` itself)
-    return function parse(source) {
-        const entries = Array.isArray(source)
-            ? source
-            : typeof source?.entries === "function"
-                ? source.entries()
-                : source;
+	// Accepts several shapes so callers don't have to remember exactly how
+	// to unwrap their data source:
+	//   - a plain array of [key, value] pairs
+	//   - a FormData instance (or anything else with an `.entries()` method,
+	//     like a Map) — `.entries()` is called for you
+	//   - an iterable of [key, value] pairs (e.g. `formData.entries()` itself)
+	return function parse(source) {
+		const entries = Array.isArray(source)
+			? source
+			: typeof source?.entries === "function"
+				? source.entries()
+				: source;
 
-        const roots = new Map();
+		const roots = new Map();
 
-        for (const [key, value] of entries) {
-            const [prefix, ...rawIndices] = key.split("_");
-            const fieldDef = fields[prefix];
-            if (!fieldDef) continue; // not part of this schema, skip
+		for (const [key, value] of entries) {
+			const [prefix, ...rawIndices] = key.split("_");
+			const fieldDef = fields[prefix];
+			if (!fieldDef) continue; // not part of this schema, skip
 
-            const { level, prop, capturesPath } = fieldDef;
-            const indices = rawIndices.map(Number).reverse(); // root -> leaf order
-            if (indices.length <= level) continue; // malformed key, skip
+			const {level, prop, capturesPath, shouldTrim} = fieldDef;
+			const indices = rawIndices.map(Number).reverse(); // root -> leaf order
+			if (indices.length <= level) continue; // malformed key, skip
 
-            let map = roots;
-            let node;
-            for (let l = 0; l <= level; l++) {
-                const idx = indices[l];
-                if (!map.has(idx)) map.set(idx, makeNode(l));
-                node = map.get(idx);
-                if (l < maxLevel) map = node[children[l]];
-            }
+			let map = roots;
+			let node;
+			for (let l = 0; l <= level; l++) {
+				const idx = indices[l];
+				if (!map.has(idx)) map.set(idx, makeNode(l));
+				node = map.get(idx);
+				if (l < maxLevel) map = node[children[l]];
+			}
 
-            node[prop] = value;
-            if (capturesPath && pathProp) {
-                if (capturesPath === true) {
-                    // Sole field at this level capturing a path: store it directly.
-                    node[pathProp] = key;
-                } else {
-                    // Multiple fields at this level capture paths: merge them into
-                    // one object under node[pathProp], keyed by `capturesPath`.
-                    if (typeof node[pathProp] !== "object" || node[pathProp] === null) {
-                        node[pathProp] = {};
-                    }
-                    node[pathProp][capturesPath] = key;
-                }
-            }
-        }
+			if (shouldTrim === true) {
+				node[prop] = value.trim();
+			} else {
+				node[prop] = value;
+			}
+			if (capturesPath && pathProp) {
+				if (capturesPath === true) {
+					// Sole field at this level capturing a path: store it directly.
+					node[pathProp] = key;
+				} else {
+					// Multiple fields at this level capture paths: merge them into
+					// one object under node[pathProp], keyed by `capturesPath`.
+					if (typeof node[pathProp] !== "object" || node[pathProp] === null) {
+						node[pathProp] = {};
+					}
+					node[pathProp][capturesPath] = key;
+				}
+			}
+		}
 
-        return toArray(roots, 0);
-    };
+		return toArray(roots, 0);
+	};
 }
 
 export const parseEntities = createFormTreeParser({
-    pathProp: "path",
-    children: ["fields"],
-    fields: {
-        entity: { level: 0, prop: "name", capturesPath: true },
-        field: { level: 1, prop: "name", capturesPath: true },
-    },
+	pathProp: "path",
+	children: ["fields"],
+	fields: {
+		entity: {level: 0, prop: "name", capturesPath: true, shouldTrim: true},
+		field: {level: 1, prop: "name", capturesPath: true, shouldTrim: true},
+	},
 });
 
 export const parseExternalSdks = createFormTreeParser({
-    pathProp: "path",
-    children: ["interfaces", "methods", "params"],
-    fields: {
-        sdkName: { level: 0, prop: "name", capturesPath: true },
-        interfaceName: { level: 1, prop: "name", capturesPath: true },
-        methodName: { level: 2, prop: "name", capturesPath: "name" },
-        returnType: { level: 2, prop: "returnType", capturesPath: "returnType" },
-        paramName: { level: 3, prop: "name", capturesPath: "name" },
-        type: { level: 3, prop: "type", capturesPath: "type" },
-    },
+	pathProp: "path",
+	children: ["interfaces", "methods", "parameters"],
+	fields: {
+		sdkName: {level: 0, prop: "name", capturesPath: true, shouldTrim: true},
+		interfaceName: {level: 1, prop: "name", capturesPath: true, shouldTrim: true},
+		methodName: {level: 2, prop: "name", capturesPath: "name", shouldTrim: true},
+		returnType: {level: 2, prop: "returnType", capturesPath: "returnType", shouldTrim: true},
+		paramName: {level: 3, prop: "name", capturesPath: "name", shouldTrim: true},
+		type: {level: 3, prop: "type", capturesPath: "type", shouldTrim: true},
+	},
 });
