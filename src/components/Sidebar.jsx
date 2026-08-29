@@ -151,7 +151,6 @@ export default function Sidebar(
 			const response = await fetch(`${API_BASE_URL}/api/preview`, {
 				method: 'POST',
 				headers: {
-					'Access-Control-Allow-Origin': '*',
 					'Content-Type': 'application/json',
 				},
 				body: JSON.stringify(spec),
