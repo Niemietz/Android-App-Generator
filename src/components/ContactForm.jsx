@@ -133,7 +133,7 @@ export default function ContactForm({
 					<div
 						className={captchaClasses}
 						data-theme="dark"
-						data-sitekey="6Le8PpItAAAAAHvtoirFBHaKbTY-PWvbPlkGKX2E"
+						data-sitekey="6LfT6Z4tAAAAAO7HSaqp_7BOX-l1wVrg3YZuPKVd"
 						data-action="submit"
 					/>
 					<div key={resetKey}>
