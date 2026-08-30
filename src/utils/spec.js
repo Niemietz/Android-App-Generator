@@ -5,7 +5,6 @@ const DEFAULT_APP_NAME = "MyApp"
 const DEFAULT_PACKAGE_NAME = "com.example.myapp"
 const DEFAULT_BASE_URL = "https://api.example.com/"
 const DEFAULT_ENTITY_NAME = "Entity"
-const SIGNING_STORE_FILENAME_EXTENSION = ".keystore"
 const DEFAULT_STORE_FILENAME = "release.keystore"
 const DEFAULT_STORE_PASSWORD = "123456"
 const DEFAULT_KEY_ALIAS = "test"
@@ -15,6 +14,7 @@ const DEFAULT_AZURE_MAPS_KEY = "abcdefg"
 
 const PASSWORD_REGEX = /^[0-9A-Za-z_*@?$%#&!+.-]*$/
 const NAME_REGEX = /^[0-9A-Za-z_-]{1,15}$/
+const FILENAME_REGEX = /^[0-9A-Za-z_.-]{1,50}$/
 const PACKAGE_NAME_REGEX = /^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/
 const URL_REGEX = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%.\+~#=]{1,256}\.[a-zA-Z0-9()]{1,63}\b(?:[-a-zA-Z0-9()@:%\+.~#?&\/=])$/
 
@@ -101,7 +101,7 @@ export const specSchema = z.object({
 		})
 	),
 	signing: z.object({
-		storeFilename: z.string().trim().min(1).max(15).regex(NAME_REGEX),
+		storeFilename: z.string().trim().min(1).max(50).regex(FILENAME_REGEX),
 		storePassword: z.string().trim().min(1).regex(PASSWORD_REGEX),
 		keyAlias: z.string().trim().min(1).max(15).regex(NAME_REGEX),
 		keyPassword: z.string().trim().min(1).regex(PASSWORD_REGEX),
@@ -180,13 +180,14 @@ export function buildSpecPayload(state) {
 			},
 			imageBackend: state.imageBackend,
 		},
-		entities: state.entities.map((e) => ({
-			name: e.name.trim() || DEFAULT_ENTITY_NAME,
-			fields: e.fields
-				.map((f) => ({name: f.name.trim(), type: f.type, nullable: f.nullable}))
-				.filter((f) => f.name.length > 0),
-			screens: {...e.screens},
-		})),
+		entities: state.entities
+			.map((e) => ({
+				name: e.name.trim() || DEFAULT_ENTITY_NAME,
+				fields: e.fields
+					.map((f) => ({name: f.name.trim(), type: f.type, nullable: f.nullable}))
+					.filter((f) => f.name.length > 0),
+				screens: {...e.screens},
+			})),
 		extraScreens: state.extraScreens.slice(),
 		externalSdks: state.externalSdks
 			.map((sdk) => ({
@@ -209,11 +210,7 @@ export function buildSpecPayload(state) {
 			}))
 			.filter((sdk) => sdk.name.length > 0),
 		signing: {
-			storeFilename: `${state.signing.storeFilename.trim()}`.concat(
-				SIGNING_STORE_FILENAME_EXTENSION.charAt(0) === "." ?
-					SIGNING_STORE_FILENAME_EXTENSION :
-					`.${SIGNING_STORE_FILENAME_EXTENSION}`
-			) || DEFAULT_STORE_FILENAME,
+			storeFilename: state.signing.storeFilename.trim() || DEFAULT_STORE_FILENAME,
 			storePassword: state.signing.storePassword.trim() || DEFAULT_STORE_PASSWORD,
 			keyAlias: state.signing.keyAlias.trim() || DEFAULT_KEY_ALIAS,
 			keyPassword: state.signing.keyPassword.trim() || DEFAULT_KEY_PASSWORD,

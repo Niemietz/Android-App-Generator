@@ -66,7 +66,7 @@ const initialState = {
 	extraScreens: [],
 	externalSdks: [],
 	signing: {
-		storeFilename: 'release',
+		storeFilename: 'release.keystore',
 		storePassword: '123456',
 		keyAlias: 'test',
 		keyPassword: '123456',
