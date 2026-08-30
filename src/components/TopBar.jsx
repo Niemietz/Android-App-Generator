@@ -6,9 +6,9 @@ export default function TopBar({state}) {
 	return (
 		<header className="topbar">
 			<div className="brand">
-				<span className="brand-mark">{'</>'}</span>
+				<span className="brand-mark" style={{cursor: "pointer"}} onClick={(e) => window.location.reload() }>{'</>'}</span>
 				<div>
-					<h1>Kotlin App Generator</h1>
+					<h1 style={{cursor: "pointer"}} onClick={(e) => window.location.reload() }>Kotlin App Generator</h1>
 					<p className="subtitle">Describe your data. Get a synced, Hilt-wired Android module tree.</p>
 				</div>
 			</div>
