@@ -217,5 +217,6 @@ export function buildSpecPayload(state) {
 		},
 		googleSecrets: {apiKey: state.googleMapsApiKey.trim() || DEFAULT_GOOGLE_MAPS_KEY},
 		azureSecrets: {apiKey: state.azureMapsApiKey.trim() || DEFAULT_AZURE_MAPS_KEY},
+		website: state.website || null,
 	};
 }

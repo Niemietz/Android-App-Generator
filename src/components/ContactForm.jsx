@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useState } from 'react';
 import {API_BASE_URL} from '../config';
 import { contactSchema } from "../utils/contact";
 import { validateForm } from "../utils/formValidation";
@@ -14,6 +14,7 @@ export default function ContactForm({
 	const [name, setName] = useState('');
 	const [email, setEmail] = useState('');
 	const [message, setMessage] = useState('');
+	const [website, setWebsite] = useState(null);
 	const [captchaClasses, setCaptchaClasses] = useState('g-recaptcha');
 	const [showCaptchaErrorMessage, setShowCaptchaErrorMessage] = useState(false);
 	const [resetKey, setResetKey] = useState(0);
@@ -61,7 +62,7 @@ export default function ContactForm({
 					'Captcha-Token': token,
 					'Captcha-Action': 'submit',
 				},
-				body: JSON.stringify({name, email, message}),
+				body: JSON.stringify({name, email, message, website}),
 			});
 
 			const data = await response.json();
@@ -129,6 +130,8 @@ export default function ContactForm({
 							/>
 						</label>
 					</div>
+					<input type="text" name="website" style={{display: "none"}} tabIndex="-1" autoComplete="off" value={website}
+					   onChange={(e) => setWebsite(e.target.value)}/>
 					<br/>
 					<div
 						className={captchaClasses}

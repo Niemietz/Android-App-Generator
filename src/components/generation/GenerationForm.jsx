@@ -30,6 +30,8 @@ export default function GenerationForm({
 			<ExternalSdksPanelRef ref={externalSdksForm} state={state} actions={actions} busy={busy}/>
 			<SigningPanelRef ref={releaseSigningForm} state={state} actions={actions}/>
 			<PreviewPanel previewContent={previewContent} onClean={onClean} busy={busy}/>
+			<input type="text" name="website" style={{display: "none"}} tabIndex="-1" autoComplete="off" value={state.website}
+			   onChange={(e) => actions.setS('website', e.target.value)}/>
 		</section>
 	);
 }
