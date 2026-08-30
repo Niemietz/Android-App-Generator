@@ -1,16 +1,16 @@
 import { z } from 'zod';
 import { _superRefineArray, _superRefineName } from "./formValidation.js";
 
-const DEFAULT_APP_NAME = "MyApp"
-const DEFAULT_PACKAGE_NAME = "com.example.myapp"
-const DEFAULT_BASE_URL = "https://api.example.com/"
-const DEFAULT_ENTITY_NAME = "Entity"
-const DEFAULT_STORE_FILENAME = "release.keystore"
-const DEFAULT_STORE_PASSWORD = "123456"
-const DEFAULT_KEY_ALIAS = "test"
-const DEFAULT_KEY_PASSWORD = "123456"
-const DEFAULT_GOOGLE_MAPS_KEY = "abcdefg"
-const DEFAULT_AZURE_MAPS_KEY = "abcdefg"
+const DEFAULT_APP_NAME = ""
+const DEFAULT_PACKAGE_NAME = ""
+const DEFAULT_BASE_URL = ""
+const DEFAULT_ENTITY_NAME = ""
+const DEFAULT_STORE_FILENAME = ""
+const DEFAULT_STORE_PASSWORD = ""
+const DEFAULT_KEY_ALIAS = ""
+const DEFAULT_KEY_PASSWORD = ""
+const DEFAULT_GOOGLE_MAPS_KEY = ""
+const DEFAULT_AZURE_MAPS_KEY = ""
 
 const PASSWORD_REGEX = /^[0-9A-Za-z_*@?$%#&!+.-]*$/
 const NAME_REGEX = /^[0-9A-Za-z_-]{1,15}$/
@@ -20,7 +20,7 @@ const URL_REGEX = /^https?:\/\/(?:www\.)?[-a-zA-Z0-9@:%.\+~#=]{1,256}\.[a-zA-Z0-
 
 export const specSchema = z.object({
 	project: z.object({
-		appName: z.string().trim().min(1),
+		appName: z.string().trim().min(1, "App name is required").max(25, "App name must have until 25 characters"),
 		packageName: z.string().trim().regex(PACKAGE_NAME_REGEX, 'Invalid package name'),
 		minSdk: z.coerce.number().int().positive(),
 		targetSdk: z.coerce.number().int().positive(),
@@ -101,10 +101,10 @@ export const specSchema = z.object({
 		})
 	),
 	signing: z.object({
-		storeFilename: z.string().trim().min(1).max(50).regex(FILENAME_REGEX),
-		storePassword: z.string().trim().min(1).regex(PASSWORD_REGEX),
-		keyAlias: z.string().trim().min(1).max(15).regex(NAME_REGEX),
-		keyPassword: z.string().trim().min(1).regex(PASSWORD_REGEX),
+		storeFilename: z.string().trim().min(1, "Store filename is required").max(50, "Store filename must have until 50 characters").regex(FILENAME_REGEX),
+		storePassword: z.string().trim().min(1, "Store password is required").regex(PASSWORD_REGEX, 'Invalid store password'),
+		keyAlias: z.string().trim().min(1, "Key alias is required").max(15, "Key alias must have until 15 characters").regex(NAME_REGEX, 'Invalid key alias'),
+		keyPassword: z.string().trim().min(1, "Key password is required").regex(PASSWORD_REGEX, 'Invalid key password'),
 	})
 });
 
